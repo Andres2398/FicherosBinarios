@@ -161,7 +161,32 @@ public class BaseDatos {
 	}
 
 	private void buscarAlumno(RandomAccessFile raf) throws IOException {
+		System.out.println("Introduce el nombre a buscar");
 		raf.seek(0);
+		String nombre = sc.nextLine();
+		while (raf.getFilePointer() < raf.length()) {
+			long pos = raf.getFilePointer();
+			int id = raf.readInt();
+
+			int activo = raf.readInt(); // leer activo
+			if (activo == 1) {
+				String nombreLeido = readString(raf, TAM_NOMBRE).trim();
+	            int edad = raf.readInt();
+	            String curso = readString(raf, TAM_CURSO).trim();
+				if (curso.equals(nombreLeido)) {
+		
+					System.out.println("ID: " + id);
+					System.out.println("Nombre: " + nombre);
+					System.out.println("Edad: " + edad);
+					System.out.println("Curso: " + curso);
+					System.out.println("-----------------------------");
+
+				}
+			} else {
+				raf.seek(pos + TAM_REGISTRO);
+			}
+
+		}
 
 	}
 
