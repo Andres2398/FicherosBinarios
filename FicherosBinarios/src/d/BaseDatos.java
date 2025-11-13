@@ -10,6 +10,7 @@ public class BaseDatos {
 	static final int TAM_REGISTRO = 4 + 4 + TAM_NOMBRE * 2 + 4 + TAM_CURSO * 2;
 	Scanner sc = new Scanner(System.in);
 	Map<Integer, String> cursos = new HashMap<>();
+	CopiaSeguridad copia = new CopiaSeguridad();
 
 	private void alta(RandomAccessFile raf) throws IOException {
 		int id = contadorIndicesID();
@@ -141,10 +142,10 @@ public class BaseDatos {
 			int activo = raf.readInt(); // leer activo
 			if (activo == 1) {
 				String nombre = readString(raf, TAM_NOMBRE).trim();
-	            int edad = raf.readInt();
-	            String cursoLeido = readString(raf, TAM_CURSO).trim();
+				int edad = raf.readInt();
+				String cursoLeido = readString(raf, TAM_CURSO).trim();
 				if (curso.equals(cursoLeido)) {
-		
+
 					System.out.println("ID: " + id);
 					System.out.println("Nombre: " + nombre);
 					System.out.println("Edad: " + edad);
@@ -171,10 +172,10 @@ public class BaseDatos {
 			int activo = raf.readInt(); // leer activo
 			if (activo == 1) {
 				String nombreLeido = readString(raf, TAM_NOMBRE).trim();
-	            int edad = raf.readInt();
-	            String curso = readString(raf, TAM_CURSO).trim();
+				int edad = raf.readInt();
+				String curso = readString(raf, TAM_CURSO).trim();
 				if (curso.equals(nombreLeido)) {
-		
+
 					System.out.println("ID: " + id);
 					System.out.println("Nombre: " + nombre);
 					System.out.println("Edad: " + edad);
@@ -199,7 +200,7 @@ public class BaseDatos {
 			System.out.println("1. Curso");
 			System.out.println("2. Alumno");
 			input = sc.nextLine();
-			System.out.println("input es :" +  input);
+			System.out.println("input es :" + input);
 			if (!input.equals("1") && !input.equals("2")) {
 				System.out.println("Caracter incorrecto, introduce 1 o 2.");
 			}
@@ -283,9 +284,41 @@ public class BaseDatos {
 		return hash % 100;
 	}
 
-	// tester
+	private void copiaSeguridad(File f) throws IOException {
+
+		boolean fin = false;
+		String input;
+		do {
+			System.out.println("Que quieres hacer: ");
+			System.out.println("1. Crear copia Principal");
+			System.out.println("2. Guardar copia diferencial");
+			System.out.println("3. Restablecer un archivo desde la ultima copia diferencial");
+			input = sc.nextLine();
+
+			if (input.equals("1") || input.equals("2") || input.equals("3"))
+				fin = true;
+			else
+				System.out.println("Caracter incorrecto");
+
+		} while (!fin);
+		boolean hecho = true;
+		if (input.equals("1")) {
+			hecho = copia.copiarTodo(f);
+			System.out.println(hecho ? "Copia principal creada" : "Ya existe una copia principal");
+
+		} else if (input.equals("2")) {
+			hecho = copia.crearDiferencias(f);
+			System.out.println(hecho ? "Copia diferencial creada" : "Aun no existe la copia principal");
+		} else {
+			hecho = copia.aplicarDiferencias();
+			System.out.println(hecho ? "Copia principal actualizada correctamente" : "Aun no existe la copia principal o las copias diferenciales");
+		}
+
+	}
+
 	public static void main(String[] args) {
-		File fichero = new File("./src/BaseDatos.dat");
+		File f = new File("./src/BaseDatos.dat");
+		File fichero = new File(f.getAbsolutePath());
 		BaseDatos bd = new BaseDatos();
 
 		try (RandomAccessFile raf = new RandomAccessFile(fichero, "rw")) {
@@ -295,7 +328,9 @@ public class BaseDatos {
 				System.out.println("1. Alta alumno");
 				System.out.println("2. Baja alumno");
 				System.out.println("3. Modificar alumno");
-				System.out.println("4. Mostrar todos");
+				System.out.println("4. Buscar");
+				System.out.println("5. Mostrar todos");
+				System.out.println("6. Copia de seguridad");
 				System.out.println("0. Salir");
 				String input = bd.sc.nextLine();
 
@@ -314,6 +349,9 @@ public class BaseDatos {
 					break;
 				case "5":
 					bd.mostrarTodos(raf);
+					break;
+				case "6":
+					bd.copiaSeguridad(f);
 					break;
 				case "0":
 					fin = true;
