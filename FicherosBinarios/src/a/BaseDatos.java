@@ -10,11 +10,20 @@ public class BaseDatos {
 	static final int TAM_REGISTRO = 4 + 4 + TAM_NOMBRE * 2 + 4 + TAM_CURSO * 2;
 	Scanner sc = new Scanner(System.in);
 	Map<Integer, String> cursos = new HashMap<>();
+	Random r = new Random();
 
 	private void alta(RandomAccessFile raf) throws IOException {
-		int id = contadorIndicesID();
-		raf.seek(raf.length()); // nos movemos al final
-
+		
+		int id=r.nextInt(1,101);
+		while(!buscarIndicesID(id)) {
+			 id=r.nextInt(1,101);
+		}
+		registrarId(id);
+		 
+		raf.seek(TAM_REGISTRO*(id-1)); 
+		
+		
+		
 		raf.writeInt(id); // id
 		raf.writeInt(1); // activo
 
@@ -31,6 +40,13 @@ public class BaseDatos {
 		writeString(raf, curso, TAM_CURSO);
 
 		System.out.println("Alumno con ID " + id + " guardado correctamente.\n");
+	}
+
+	private void registrarId(int id) {
+		File f = new File("IndicesID.txt");
+		File fichero = new File(f.getAbsolutePath());
+		
+		
 	}
 
 	private void baja(RandomAccessFile raf) throws IOException {
@@ -244,27 +260,22 @@ public class BaseDatos {
 		return valor;
 	}
 
-	private int contadorIndicesID() {
+	private boolean buscarIndicesID(int id) throws FileNotFoundException, IOException {
 		File f = new File("./src/indicesID.txt");
-		int id = 0;
-		try {
-			if (!f.exists()) {
-				try (FileWriter fw = new FileWriter(f)) {
-					fw.write("0");
-				}
+		
+		
+		try (RandomAccessFile raf = new RandomAccessFile(f, "rw")){
+			
+			if(raf.readInt()==id) {
+				return false;
 			}
-			try (Scanner sc = new Scanner(f)) {
-				if (sc.hasNextInt())
-					id = sc.nextInt();
+			else {
+				raf.seek(8);
 			}
-			id++;
-			try (FileWriter fw = new FileWriter(f)) {
-				fw.write(String.valueOf(id));
-			}
-		} catch (IOException e) {
-			System.out.println("Error con el archivo de índices: " + e.getMessage());
 		}
-		return id;
+		
+		
+		return true;
 	}
 
 	private void mapearCurso(String curso) {
